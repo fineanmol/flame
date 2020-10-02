@@ -1,15 +1,13 @@
 library flame;
 
 import 'package:audioplayers/audio_cache.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
-import 'flame_audio.dart';
-import 'bgm.dart';
-import 'images.dart';
 import 'assets_cache.dart';
+import 'bgm.dart';
+import 'flame_audio.dart';
+import 'images.dart';
 import 'util.dart';
 
 /// This class holds static references to some useful objects to use in your game.
@@ -54,23 +52,7 @@ class Flame {
     _bundle = bundle;
   }
 
-  /// TODO verify if this is still needed (I don't think so)
   static void initializeWidget() {
     WidgetsFlutterBinding.ensureInitialized();
-  }
-}
-
-/// This class never needs to be used.
-///
-/// It only exists here in order for [BindingBase] to setup Flutter services.
-/// TODO: this could possibly be private, verify if it'd work.
-class FlameBiding extends BindingBase with GestureBinding, ServicesBinding {
-  static FlameBiding instance;
-
-  static FlameBiding ensureInitialized() {
-    if (FlameBiding.instance == null) {
-      FlameBiding();
-    }
-    return FlameBiding.instance;
   }
 }

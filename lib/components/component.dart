@@ -2,11 +2,12 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/painting.dart';
+import 'package:meta/meta.dart';
 
-import '../svg.dart';
-import '../sprite.dart';
-import '../position.dart';
 import '../anchor.dart';
+import '../effects/effects.dart';
+import '../position.dart';
+import '../sprite.dart';
 import '../text_config.dart';
 
 /// This represents a Component for your game.
@@ -54,6 +55,15 @@ abstract class Component {
   /// It can be any integer (negative, zero, or positive).
   /// If two components share the same priority, they will probably be drawn in the order they were added.
   int priority() => 0;
+
+  /// Called when the component has been added and preperad by the game instance.
+  ///
+  /// This can be used to make initializations on your component as, when this method is called,
+  /// things like resize (and other mixins) are already set and usable.
+  void onMount() {}
+
+  /// Called right before the component is destroyed and removed from the game
+  void onDestroy() {}
 }
 
 /// A [Component] implementation that represents a component that has a specific, possibly dynamic position on the screen.
@@ -66,8 +76,8 @@ abstract class PositionComponent extends Component {
   Anchor anchor = Anchor.topLeft;
   bool renderFlipX = false;
   bool renderFlipY = false;
-
   bool debugMode = false;
+  final List<PositionComponentEffect> _effects = [];
 
   Color get debugColor => const Color(0xFFFF00FF);
 
@@ -141,6 +151,25 @@ abstract class PositionComponent extends Component {
       renderDebugMode(canvas);
     }
   }
+
+  void addEffect(PositionComponentEffect effect) {
+    _effects.add(effect..initialize(this));
+  }
+
+  void removeEffect(PositionComponentEffect effect) {
+    effect.dispose();
+  }
+
+  void clearEffects() {
+    _effects.forEach(removeEffect);
+  }
+
+  @mustCallSuper
+  @override
+  void update(double dt) {
+    _effects.forEach((e) => e.update(dt));
+    _effects.removeWhere((e) => e.hasFinished());
+  }
 }
 
 /// A [PositionComponent] that renders a single [Sprite] at the designated position, scaled to have the designated size and rotated to the designated angle.
@@ -148,6 +177,7 @@ abstract class PositionComponent extends Component {
 /// This is the most commonly used child of [Component].
 class SpriteComponent extends PositionComponent {
   Sprite sprite;
+  Paint overridePaint;
 
   SpriteComponent();
 
@@ -165,37 +195,12 @@ class SpriteComponent extends PositionComponent {
   @override
   void render(Canvas canvas) {
     prepareCanvas(canvas);
-    sprite.render(canvas, width: width, height: height);
+    sprite.render(canvas,
+        width: width, height: height, overridePaint: overridePaint);
   }
 
   @override
   bool loaded() {
     return sprite != null && sprite.loaded() && x != null && y != null;
   }
-
-  @override
-  void update(double t) {}
-}
-
-class SvgComponent extends PositionComponent {
-  Svg svg;
-
-  SvgComponent.fromSvg(double width, double height, this.svg) {
-    this.width = width;
-    this.height = height;
-  }
-
-  @override
-  void render(Canvas canvas) {
-    prepareCanvas(canvas);
-    svg.render(canvas, width, height);
-  }
-
-  @override
-  bool loaded() {
-    return svg != null && svg.loaded() && x != null && y != null;
-  }
-
-  @override
-  void update(double t) {}
 }

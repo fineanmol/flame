@@ -1,14 +1,19 @@
 import 'dart:ui';
 
+import '../animation.dart';
 import 'component.dart';
-import 'package:flame/animation.dart';
 
 class AnimationComponent extends PositionComponent {
   Animation animation;
+  Paint overridePaint;
   bool destroyOnFinish = false;
 
-  AnimationComponent(double width, double height, this.animation,
-      {this.destroyOnFinish = false}) {
+  AnimationComponent(
+    double width,
+    double height,
+    this.animation, {
+    this.destroyOnFinish = false,
+  }) {
     this.width = width;
     this.height = height;
   }
@@ -16,14 +21,17 @@ class AnimationComponent extends PositionComponent {
   AnimationComponent.empty();
 
   AnimationComponent.sequenced(
-    width,
-    height,
+    double width,
+    double height,
     String imagePath,
     int amount, {
+    int amountPerRow,
     double textureX = 0.0,
     double textureY = 0.0,
     double textureWidth,
     double textureHeight,
+    double stepTime,
+    bool loop = true,
     this.destroyOnFinish = false,
   }) {
     this.width = width;
@@ -31,10 +39,13 @@ class AnimationComponent extends PositionComponent {
     animation = Animation.sequenced(
       imagePath,
       amount,
+      amountPerRow: amountPerRow,
       textureX: textureX,
       textureY: textureY,
       textureWidth: textureWidth,
       textureHeight: textureHeight,
+      stepTime: stepTime ?? 0.1,
+      loop: loop,
     );
   }
 
@@ -47,11 +58,17 @@ class AnimationComponent extends PositionComponent {
   @override
   void render(Canvas canvas) {
     prepareCanvas(canvas);
-    animation.getSprite().render(canvas, width: width, height: height);
+    animation.getSprite().render(
+          canvas,
+          width: width,
+          height: height,
+          overridePaint: overridePaint,
+        );
   }
 
   @override
   void update(double t) {
+    super.update(t);
     animation.update(t);
   }
 }

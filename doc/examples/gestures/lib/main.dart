@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:flame/gestures.dart';
+import 'package:flame/palette.dart';
 
 void main() {
   final game = MyGame();
   runApp(game.widget);
 }
 
-class MyGame extends Game with TapDetector, DoubleTapDetector, PanDetector {
-  final _whitePaint = Paint()..color = const Color(0xFFFFFFFF);
+/// Includes an example including basic detectors
+class MyGame extends Game
+    with TapDetector, DoubleTapDetector, PanDetector, LongPressDetector {
+  final _whitePaint = BasicPalette.white.paint;
   final _bluePaint = Paint()..color = const Color(0xFF0000FF);
   final _greenPaint = Paint()..color = const Color(0xFF00FF00);
+  final _redPaint = Paint()..color = const Color(0xFFFF0000);
 
   Paint _paint;
 
@@ -28,6 +32,11 @@ class MyGame extends Game with TapDetector, DoubleTapDetector, PanDetector {
   @override
   void onDoubleTap() {
     _paint = _greenPaint;
+  }
+
+  @override
+  void onLongPress() {
+    _paint = _redPaint;
   }
 
   @override

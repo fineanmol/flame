@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart' as widgets;
 
 import 'animation.dart';
-import 'sprite.dart';
 import 'components/animation_component.dart';
-import 'game.dart';
+import 'game/base_game.dart';
+import 'game/embedded_game_widget.dart';
 import 'position.dart';
+import 'sprite.dart';
 
 /// Some utilities that did not fit anywhere else.
 ///
@@ -19,6 +21,9 @@ class Util {
   ///
   /// Most games should probably be this way.
   Future<void> fullScreen() {
+    if (kIsWeb) {
+      return Future.value();
+    }
     return SystemChrome.setEnabledSystemUIOverlays([]);
   }
 
@@ -26,6 +31,9 @@ class Util {
   ///
   /// When it opens, it will automatically change orientation to the preferred one (if possible) depending on the physical orientation of the device.
   Future<void> setOrientation(DeviceOrientation orientation) {
+    if (kIsWeb) {
+      return Future.value();
+    }
     return SystemChrome.setPreferredOrientations(
       <DeviceOrientation>[orientation],
     );
@@ -35,6 +43,9 @@ class Util {
   ///
   /// When it opens, it will automatically change orientation to the preferred one (if possible) depending on the physical orientation of the device.
   Future<void> setOrientations(List<DeviceOrientation> orientations) {
+    if (kIsWeb) {
+      return Future.value();
+    }
     return SystemChrome.setPreferredOrientations(orientations);
   }
 
@@ -88,7 +99,7 @@ class Util {
 
   /// Waits for the initial screen dimensions to be available.
   ///
-  /// Because of flutter's issue #5259, when the app starts the size might be 0x0.
+  /// Because of flutter's issue [#5259](https://github.com/flutter/flutter/issues/5259), when the app starts the size might be 0x0.
   /// This waits for the information to be properly updated.
   ///
   /// A best practice would be to implement there resize hooks on your game and components and don't use this at all.
@@ -116,7 +127,9 @@ class Util {
   ///
   /// Read more at: https://flame-engine.org/docs/input.md
   ///
-  /// @Deprecated('This method can lead to confuse behaviour, use the gestures methods provided by the Game class')
+  @Deprecated(
+    'This method can lead to confuse behaviour, use the gestures methods provided by the Game class',
+  )
   void addGestureRecognizer(GestureRecognizer recognizer) {
     if (GestureBinding.instance == null) {
       throw Exception(
@@ -152,16 +165,21 @@ class Util {
   /// This actually creates an [EmbeddedGameWidget] with a [SimpleGame] whose only content is an [AnimationComponent] created from the provided [animation].
   /// You can use this implementation as base to easily create your own widgets based on more complex games.
   /// This is intended to be used by non-game apps that want to add a sprite sheet animation.
+  ///
+  @Deprecated('Use SpriteAnimation instead')
   widgets.Widget animationAsWidget(Position size, Animation animation) {
     return EmbeddedGameWidget(
-        SimpleGame(AnimationComponent(size.x, size.y, animation)),
-        size: size);
+      BaseGame()..add(AnimationComponent(size.x, size.y, animation)),
+      size: size,
+    );
   }
 
-  /// Returns a regular Flutter widget represeting this sprite, rendered with the specified size.
+  /// Returns a regular Flutter widget representing this sprite, rendered with the specified size.
   ///
   /// This will create a [CustomPaint] widget using a [CustomPainter] for rendering the [Sprite]
   /// Be aware that the Sprite must have been loaded, otherwise it can't be rendered
+  ///
+  @Deprecated('Use SpriteWidget instead')
   widgets.CustomPaint spriteAsWidget(Size size, Sprite sprite) =>
       widgets.CustomPaint(size: size, painter: _SpriteCustomPainter(sprite));
 }

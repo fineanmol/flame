@@ -1,13 +1,18 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart' as material;
 
-import 'position.dart';
 import 'anchor.dart';
+import 'components/text_component.dart';
+import 'memory_cache.dart';
+import 'position.dart';
 
 /// A Text Config contains all typographical information required to render texts; i.e., font size and color, family, etc.
 ///
 /// It does not hold information regarding the position of the text to be render neither the text itself (the string).
 /// To hold all those information, use the Text component.
+///
+/// It is used by [TextComponent].
 class TextConfig {
   /// The font size to be used, in points.
   final double fontSize;
@@ -49,10 +54,13 @@ class TextConfig {
   /// For proper fonts of languages like Hebrew or Arabic, replace this with [TextDirection.rtl].
   final TextDirection textDirection;
 
+  final MemoryCache _textPainterCache =
+      MemoryCache<String, material.TextPainter>();
+
   /// Creates a constant [TextConfig] with sensible defaults.
   ///
   /// Every parameter can be specified.
-  const TextConfig({
+  TextConfig({
     this.fontSize = 24.0,
     this.color = const Color(0xFF000000),
     this.fontFamily = 'Arial',
@@ -67,8 +75,8 @@ class TextConfig {
   ///
   /// Example usage:
   ///
-  ///     const TextConfig config = TextConfig(fontSize: 48.0, fontFamily: 'Awesome Font', anchor: Anchor.rightBottom);
-  ///     config.render(c, Offset(size.width - 10, size.height - 10);
+  ///     const TextConfig config = TextConfig(fontSize: 48.0, fontFamily: 'Awesome Font');
+  ///     config.render(c, Offset(size.width - 10, size.height - 10, anchor: Anchor.bottomRight);
   void render(Canvas canvas, String text, Position p,
       {Anchor anchor = Anchor.topLeft}) {
     final material.TextPainter tp = toTextPainter(text);
@@ -90,22 +98,26 @@ class TextConfig {
   /// However, you probably want to use the [render] method witch already renders for you considering the anchor.
   /// That way, you don't need to perform the math for yourself.
   material.TextPainter toTextPainter(String text) {
-    final material.TextStyle style = material.TextStyle(
-      color: color,
-      fontSize: fontSize,
-      fontFamily: fontFamily,
-    );
-    final material.TextSpan span = material.TextSpan(
-      style: style,
-      text: text,
-    );
-    final material.TextPainter tp = material.TextPainter(
-      text: span,
-      textAlign: textAlign,
-      textDirection: textDirection,
-    );
-    tp.layout();
-    return tp;
+    if (!_textPainterCache.containsKey(text)) {
+      final material.TextStyle style = material.TextStyle(
+        color: color,
+        fontSize: fontSize,
+        fontFamily: fontFamily,
+      );
+      final material.TextSpan span = material.TextSpan(
+        style: style,
+        text: text,
+      );
+      final material.TextPainter tp = material.TextPainter(
+        text: span,
+        textAlign: textAlign,
+        textDirection: textDirection,
+      );
+      tp.layout();
+
+      _textPainterCache.setValue(text, tp);
+    }
+    return _textPainterCache.getValue(text);
   }
 
   /// Creates a new [TextConfig] changing only the [fontSize].

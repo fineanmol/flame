@@ -23,8 +23,9 @@ class Ball extends PositionComponent {
   }
 
   @override
-  void update(double delta) {
-    x += (forward ? 1 : -1) * 100 * delta;
+  void update(double dt) {
+    super.update(dt);
+    x += (forward ? 1 : -1) * 100 * dt;
 
     if (x <= 0 || x + width >= gameSize.width) {
       if (forward) {
@@ -34,7 +35,6 @@ class Ball extends PositionComponent {
       }
 
       forward = !forward;
-      print('boin');
       Flame.audio.play('boin.mp3', volume: 1.0);
     }
   }

@@ -1,13 +1,14 @@
 import 'dart:async';
-import 'dart:ui';
 import 'dart:math' as math;
+import 'dart:ui';
+
 import 'package:flutter/widgets.dart' as widgets;
 
-import 'component.dart';
-import 'mixins/resizable.dart';
-import '../text_config.dart';
 import '../palette.dart';
 import '../position.dart';
+import '../text_config.dart';
+import 'component.dart';
+import 'mixins/resizable.dart';
 
 class TextBoxConfig {
   final double maxWidth;
@@ -15,7 +16,7 @@ class TextBoxConfig {
   final double timePerChar;
   final double dismissDelay;
 
-  const TextBoxConfig({
+  TextBoxConfig({
     this.maxWidth = 200.0,
     this.margin = 8.0,
     this.timePerChar = 0.0,
@@ -46,19 +47,26 @@ class TextBoxComponent extends PositionComponent with Resizable {
 
   TextBoxConfig get boxConfig => _boxConfig;
 
-  TextBoxComponent(String text,
-      {TextConfig config = const TextConfig(),
-      TextBoxConfig boxConfig = const TextBoxConfig()}) {
-    _boxConfig = boxConfig;
-    _config = config;
+  TextBoxComponent(
+    String text, {
+    TextConfig config,
+    TextBoxConfig boxConfig,
+  }) {
+    _boxConfig = boxConfig ?? TextBoxConfig();
+    _config = config ?? TextConfig();
     _text = text;
-    _lines = [''];
+    _lines = [];
     text.split(' ').forEach((word) {
-      final String possibleLine = _lines.last + ' ' + word;
+      final String possibleLine =
+          _lines.isEmpty ? word : _lines.last + ' ' + word;
       final widgets.TextPainter p = config.toTextPainter(possibleLine);
       _lineHeight ??= p.height;
       if (p.width <= _boxConfig.maxWidth - 2 * _boxConfig.margin) {
-        _lines.last = possibleLine;
+        if (_lines.isNotEmpty) {
+          _lines.last = possibleLine;
+        } else {
+          _lines.add(possibleLine);
+        }
         _updateMaxWidth(p.width);
       } else {
         _lines.add(word);
@@ -80,8 +88,8 @@ class TextBoxComponent extends PositionComponent with Resizable {
   bool get finished => _lifeTime > totalCharTime + _boxConfig.dismissDelay;
 
   int get currentChar => _boxConfig.timePerChar == 0.0
-      ? _text.length - 1
-      : math.min(_lifeTime ~/ _boxConfig.timePerChar, _text.length - 1);
+      ? _text.length
+      : math.min(_lifeTime ~/ _boxConfig.timePerChar, _text.length);
 
   int get currentLine {
     int totalCharCount = 0;
@@ -174,6 +182,7 @@ class TextBoxComponent extends PositionComponent with Resizable {
 
   @override
   void update(double dt) {
+    super.update(dt);
     final int prevCurrentChar = currentChar;
     _lifeTime += dt;
     if (prevCurrentChar != currentChar) {

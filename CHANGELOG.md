@@ -1,5 +1,127 @@
+# CHANGELOG
+
+## 0.27.0
+ - Improved the accuracy of the `FPSCounter` by using Flutter's internal frame timings.
+ - Adding MouseMovementDetector
+ - Adding ScrollDetector
+ - Fixes BGM error
+ - Adding Isometric Tile Maps
+
+## 0.26.0
+ - Improving Flame image auto cache
+ - Fix bug in the Box2DGame's add and addLater method , when the Component extends BodyComponent and mixin HasGameRef or other mixins ,the mixins will not be set correctly
+
+## 0.25.0
+ - Externalizing Tiled support to its own package `flame_tiled`
+ - Preventing some crashs that could happen on web when some methods were called
+ - Add mustCallSuper to BaseGame `update` and `render` methods
+ - Moved FPS code from BaseGame to a mixin, BaseGame uses the new mixin.
+ - Deprecate flare API in favor of the package `flame_flare`
+
+## 0.24.0
+ - Outsourcing SVG support to an external package
+ - Adding MemoryCache class
+ - Fixing games crashes on Web
+ - Update tiled dependency to 0.6.0 (objects' properties are now double)
+
+## 0.23.0
+ - Add Joystick Component
+ - Adding BaseGame#markToRemove
+ - Upgrade tiled and flutter_svg dependencies
+ - onComplete callback for effects
+ - Adding Layers
+ - Update tiled dep to 0.5.0 and add support for rotation with improved api
+
+## 0.22.1
+ - Fix Box2DComponent render priority
+ - Fix PositionComponentEffect drifting
+ - Add possibility to combine effects
+ - Update to newest box2d_flame which fixes torque bug
+ - Adding SpriteSheet.fromImage
+
+## 0.22.0
+ - Fixing BaseGame tap detectors issues
+ - Adding SpriteWidget
+ - Adding AnimationWidget
+ - Upgrade Flutter SVG to fix for flame web
+ - Add linting to all the examples
+ - Run linting only on affected and changed examples
+ - Add SequenceEffect
+ - Fixed bug with travelTime in RotateEffect
+
+## 0.21.0
+- Adding AssetsCache.readBinaryFile
+- Splitting debugMode from recordFps mode
+- Adding support for multi touch tap and drag events
+- Fix animations example
+- Add possibility for infinite and alternating effects
+- Add rotational effect for PositionComponents
+
+## 0.20.2
+- Fix text component bug with anchor being applied twice
+
+## 0.20.1
+- Adding method to load image bases on base64 data url.
+- Fix Box2DGame to follow render priority
+- Fix games trying to use gameRef inside the resize function
+
+## 0.20.0
+- Refactor game.dart classes into separate files
+- Adding a GameLoop class which uses a Ticker for updating game
+- Adding sprites example
+- Made BaseGame non-abstract and removed SimpleGame
+- Adding SpriteButton Widget
+- Added SpriteBatch API, which renders sprites effectively using Canvas.drawAtlas
+- Introducing basic effects API, including MoveEffect and ScaleEffect
+- Adding ContactCallback controls in Box2DGame
+
+## 0.19.1
+ - Bump AudioPlayers version to allow for web support
+ - Adding Game#pauseEngine and Game#resumeEngine methods
+ - Removing FlameBinding since it isn't used and clashes with newest flutter
+
+## 0.19.0
+ - Fixing component lifecycle calls on BaseGame#addLater
+ - Fixing Component#onDestroy, which was been called multiple times sometimes
+ - Fixing Widget Overlay usage over many game instances
+
+## 0.18.3
+- Adding Component#onDestroy
+- Adding Keyboard events API
+- Adding Box2DGame, an extension of BaseGame to simplify lifecycle of Box2D components
+- Add onAnimateComplete for Animation (thanks @diegomgarcia)
+- Adding AnimationComponent#overridePaint
+- Adding SpriteComponent#overridePaint
+- Updating AudioPlayers to enable Web Audio support
+
+## 0.18.2
+- Add loop for AnimationComponent.sequenced() (thanks @wenxiangjiang)
+- TextComponent optimization (thanks @Gericop)
+- Adding Component#onMount
+- Check if chidren are loaded before rendering on ComposedComponent (thanks @wenxiangjiang)
+- Amend type for width and height properties on Animation.sequenced (thanks @wenxiangjiang)
+- Fixing Tapable position checking
+- Support line feed when create animation from a single image source (thanks @wenxiangjiang)
+- Fixing TextBoxComponent start/end of line bugs (thanks @kurtome)
+- Prevent widgets overlay controller from closing when in debug mode
+
+
+## 0.18.1
+- Expose stepTime paramter from the Animation class to the animation component
+- Updated versions for bugfixes + improved macOS support. (thanks @flowhorn)
+- Update flutter_svg to 0.17.1 (thanks @flowhorn)
+- Update audioplayers to 0.14.0 (thanks @flowhorn)
+- Update path_provider to 1.6.0 (thanks @flowhorn)
+- Update ordered_set to 1.1.5 (thanks @flowhorn)
+
+## 0.18.0
+- Improving FlareComponent API and updating FlareFlutter dependency
+- Adding HasWidgetsOverlay mixin
+- Adding NineTileBox widget
+
 ## 0.17.4
 - Fixing compilations errors regarding changes on `box2_flame`
+- Add splash screen docs
 
 ## 0.17.3
 - Tweaking text box rendering to reduce pixelated text (thanks, @kurtome)

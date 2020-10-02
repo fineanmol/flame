@@ -4,7 +4,6 @@ import 'dart:ui';
 
 import 'package:flame/animation.dart';
 import 'package:flame/components/component.dart';
-import 'package:flame/flare_animation.dart';
 import 'package:flame/particles/circle_particle.dart';
 import 'package:flame/particles/composed_particle.dart';
 import 'package:flame/particles/curved_particle.dart';
@@ -18,7 +17,6 @@ import 'package:flame/particles/accelerated_particle.dart';
 import 'package:flame/particles/paint_particle.dart';
 import 'package:flame/particles/animation_particle.dart';
 import 'package:flame/particles/component_particle.dart';
-import 'package:flame/particles/flare_particle.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 import 'package:flame/time.dart' as flame_time;
@@ -43,7 +41,7 @@ class MyGame extends BaseGame {
   final Random rnd = Random();
   final StepTween steppedTween = StepTween(begin: 0, end: 5);
   final trafficLight = TrafficLightComponent();
-  final TextConfig fpsTextConfig = const TextConfig(
+  final TextConfig fpsTextConfig = TextConfig(
     color: const Color(0xFFFFFFFF),
   );
 
@@ -52,11 +50,12 @@ class MyGame extends BaseGame {
 
   Offset cellSize;
   Offset halfCellSize;
-  FlareAnimation flareAnimation;
+
+  @override
+  bool recordFps() => true;
 
   MyGame({
     Size screenSize,
-    this.flareAnimation,
   }) {
     size = screenSize;
     cellSize = Offset(size.width / gridSize, size.height / gridSize);
@@ -92,7 +91,6 @@ class MyGame extends BaseGame {
       animationParticle(),
       fireworkParticle(),
       componentParticle(),
-      flareParticle(),
     ];
 
     // Place all the [Particle] instances
@@ -217,7 +215,7 @@ class MyGame extends BaseGame {
     return Particle.generate(
       count: 5,
       generator: (i) => MovingParticle(
-        curve: Interval(.2, .6, curve: Curves.easeInOutCubic),
+        curve: const Interval(.2, .6, curve: Curves.easeInOutCubic),
         to: randomCellOffset() * .5,
         child: CircleParticle(
           radius: 5 + rnd.nextDouble() * 5,
@@ -297,7 +295,7 @@ class MyGame extends BaseGame {
   Particle imageParticle() {
     return ImageParticle(
       size: const Size.square(24),
-      image: Flame.images.loadedFiles['zap.png'],
+      image: Flame.images.loadedFiles['zap.png'].loadedImage,
     );
   }
 
@@ -461,36 +459,6 @@ class MyGame extends BaseGame {
     );
   }
 
-  /// [FlareParticle] renders fiven [FlareAnimation] inside
-  /// as you can see, animation could be reused across
-  /// different particles.
-  Particle flareParticle() {
-    final flare = ComposedParticle(children: <Particle>[
-      // Circle Particle for background
-      CircleParticle(
-          paint: Paint()..color = Colors.white12,
-          radius: flareAnimation.width / 2),
-      FlareParticle(flare: flareAnimation),
-    ]);
-
-    final List<Offset> corners = [
-      -halfCellSize,
-      halfCellSize,
-    ];
-
-    return RotatingParticle(
-      to: pi,
-      child: Particle.generate(
-        count: 2,
-        generator: (i) => MovingParticle(
-          to: corners[i] * .4,
-          curve: SineCurve(),
-          child: flare,
-        ),
-      ),
-    );
-  }
-
   /// [Particle] base class exposes a number
   /// of convenience wrappers to make positioning.
   ///
@@ -523,6 +491,7 @@ class MyGame extends BaseGame {
 
   @override
   bool debugMode() => true;
+
   @override
   void render(Canvas canvas) {
     super.render(canvas);
@@ -556,7 +525,7 @@ class MyGame extends BaseGame {
     const rows = 8;
     const frames = columns * rows;
     const imagePath = 'boom3.png';
-    final spriteImage = Flame.images.loadedFiles[imagePath];
+    final spriteImage = Flame.images.loadedFiles[imagePath].loadedImage;
     final spritesheet = SpriteSheet(
       rows: rows,
       columns: columns,
@@ -587,13 +556,8 @@ Future<BaseGame> loadGame() async {
       'boom3.png',
     ]),
   ]);
-  const flareSize = 32.0;
-  final flareAnimation = await FlareAnimation.load('assets/diamond.flr');
-  flareAnimation.updateAnimation('Spin');
-  flareAnimation.width = flareSize;
-  flareAnimation.height = flareSize;
 
-  return MyGame(screenSize: gameSize, flareAnimation: flareAnimation);
+  return MyGame(screenSize: gameSize);
 }
 
 /// A curve which maps sinus output (-1..1,0..pi)

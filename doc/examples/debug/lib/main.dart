@@ -1,8 +1,7 @@
 import 'package:flame/game.dart';
 import 'package:flame/flame.dart';
-import 'package:flame/svg.dart';
 import 'package:flame/position.dart';
-import 'package:flame/components/component.dart' show SvgComponent;
+import 'package:flame/components/component.dart';
 import 'package:flame/components/mixins/resizable.dart';
 import 'package:flame/text_config.dart';
 
@@ -16,15 +15,16 @@ void main() async {
   myGame.start();
 }
 
-class AndroidComponent extends SvgComponent with Resizable {
+class AndroidComponent extends SpriteComponent with Resizable {
   static const int SPEED = 150;
   int xDirection = 1;
   int yDirection = 1;
 
-  AndroidComponent() : super.fromSvg(100, 100, Svg('android.svg'));
+  AndroidComponent() : super.square(100, 'android.png');
 
   @override
   void update(double dt) {
+    super.update(dt);
     if (size == null) {
       return;
     }
@@ -48,10 +48,13 @@ class AndroidComponent extends SvgComponent with Resizable {
 }
 
 class MyGame extends BaseGame {
-  final fpsTextConfig = const TextConfig(color: const Color(0xFFFFFFFF));
+  final fpsTextConfig = TextConfig(color: const Color(0xFFFFFFFF));
 
   @override
   bool debugMode() => true;
+
+  @override
+  bool recordFps() => true;
 
   void start() {
     final android = AndroidComponent();

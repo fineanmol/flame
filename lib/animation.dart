@@ -15,6 +15,8 @@ class Frame {
   Frame(this.sprite, this.stepTime);
 }
 
+typedef OnCompleteAnimation = void Function();
+
 /// Represents an animation, that is, a list of sprites that change with time.
 class Animation {
   /// The frames that compose this animation.
@@ -33,6 +35,9 @@ class Animation {
 
   /// Whether the animation loops after the last sprite of the list, going back to the first, or keeps returning the last when done.
   bool loop = true;
+
+  /// Registered method to be triggered when the animation complete.
+  OnCompleteAnimation onCompleteAnimation;
 
   /// Creates an animation given a list of frames.
   Animation(this.frames, {this.loop = true});
@@ -55,6 +60,9 @@ class Animation {
   ///
   /// From a single image source, it creates multiple sprites based on the parameters:
   /// [amount]: how many sprites this animation is composed of
+  /// [amountPerRow]: If the sprites used to create an animation are not on the same row,
+  ///     you can use this parameter to specify how many sprites per row.
+  ///     For detailed, please refer to example at "/doc/examples/animations".
   /// [textureX]: x position on the original image to start (defaults to 0)
   /// [textureY]: y position on the original image to start (defaults to 0)
   /// [textureWidth]: width of each frame (defaults to null, that is, full width of the sprite sheet)
@@ -66,18 +74,21 @@ class Animation {
   Animation.sequenced(
     String imagePath,
     int amount, {
+    int amountPerRow,
     double textureX = 0.0,
     double textureY = 0.0,
     double textureWidth,
     double textureHeight,
     double stepTime = 0.1,
-  }) {
+    this.loop = true,
+  }) : assert(amountPerRow == null || amount >= amountPerRow) {
+    amountPerRow ??= amount;
     frames = List<Frame>(amount);
     for (var i = 0; i < amount; i++) {
       final Sprite sprite = Sprite(
         imagePath,
-        x: textureX + i * textureWidth,
-        y: textureY,
+        x: textureX + (i % amountPerRow) * textureWidth,
+        y: textureY + (i ~/ amountPerRow) * textureHeight,
         width: textureWidth,
         height: textureHeight,
       );
@@ -90,17 +101,20 @@ class Animation {
     String imagePath,
     int amount,
     List<double> stepTimes, {
+    int amountPerRow,
     double textureX = 0.0,
     double textureY = 0.0,
     double textureWidth,
     double textureHeight,
-  }) {
+    this.loop = true,
+  }) : assert(amountPerRow == null || amount >= amountPerRow) {
+    amountPerRow ??= amount;
     frames = List<Frame>(amount);
     for (var i = 0; i < amount; i++) {
       final Sprite sprite = Sprite(
         imagePath,
-        x: textureX + i * textureWidth,
-        y: textureY,
+        x: textureX + (i % amountPerRow) * textureWidth,
+        y: textureY + (i ~/ amountPerRow) * textureHeight,
         width: textureWidth,
         height: textureHeight,
       );
@@ -195,6 +209,7 @@ class Animation {
       return;
     }
     if (!loop && isLastFrame) {
+      onCompleteAnimation?.call();
       return;
     }
     while (clock > currentFrame.stepTime) {

@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:flame/components/component.dart';
-import 'package:flame/flame.dart';
 import 'package:flutter/painting.dart';
+
+import '../flame.dart';
+import 'component.dart';
 
 /// Specifications with a path to an image and how it should be drawn in
 /// relation to the device screen
@@ -173,6 +174,7 @@ class ParallaxComponent extends PositionComponent {
 
   @override
   void update(double t) {
+    super.update(t);
     if (!loaded()) {
       return;
     }

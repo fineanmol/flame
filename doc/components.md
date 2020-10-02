@@ -25,7 +25,7 @@ The most commonly used implementation, `SpriteComponent`, can be created with a 
 ```
 
 In the event that you want to easily change the direction of your components rendering, you can also use
-`renderFlipX` and `renderFlipY` to flip anything drawn to canvas during `render(Canvas canvas)`. 
+`renderFlipX` and `renderFlipY` to flip anything drawn to canvas during `render(Canvas canvas)`.
 This is available on all `PositionComponent` objects, and is especially useful on `SpriteComponent` and
 `AnimationComponent`. Simply set `component.renderFlipX = true` for example reverse the horizontal rendering.
 
@@ -36,6 +36,10 @@ The `resize` method is called whenever the screen is resized, and in the beginni
 The `destroy` method can be implemented to return true and warn the `BaseGame` that your object is marked for destruction, and it will be remove after the current update loop. It will then no longer be rendered or updated.
 
 The `isHUD` method can be implemented to return true (default false) to make the `BaseGame` ignore the `camera` for this element.
+
+The `onMount` method can be overridden to run initialization code for the component. When this method is called, BaseGame ensures that all the mixins which would change this component behaviour are already resolved.
+
+The `onDestroy` method can be overridden to run code before the component is removed from the game.
 
 There are also other implementations:
 
@@ -74,21 +78,61 @@ This component uses an instance of `Svg` class to represent a Component that has
     android.y = 100;
 ```
 
-## FlareAnimation Component
+## FlareActor Component
 
-This component wraps an instance of the [FlareAnimation](/doc/images.md#FlareAnimation), it receives the filename of the Flare animation file, which animation from that file you want to use, and the `width` and `height` of the rendered animation.
+*Note*: The previous implementation of a Flare integration API using `FlareAnimation` and `FlareComponent` has been deprecated.
+
+To use Flare within Flame, use the [`flame_flare`](https://github.com/flame-engine/flame_flare) package.
+
+This is the interface to use a [flare animation](https://pub.dev/packages/flare_flutter) within flame.
+`FlareActorComponent` has almost the same API as of flare's FlareActor widget. It receives the animation filename (that are loaded by default with `Flame.bundle`),
+it also can receive a FlareController that can play multiple animations and control nodes.
 
 ```dart
-    final fileName = "assets/Bob_Minion.flr";
-    final animation = "Wave";
-    final width = 306;
-    final height = 228;
+    import 'package:flame_flare/flame_flare.dart';
 
-    FlareComponent flareAnimation = FlareComponent(fileName, animation, width, height);
+    // your implementation of FlareController
+    class WashingtonController extends FlareControls {
+        
+        ActorNode rightHandNode;
+        
+        void initialize(FlutterActorArtboard artboard) {
+            super.initialize(artboard);
+            
+            // get flare node
+            rightHand = artboard.getNode('right_hand');
+        }
+    }
+
+    final fileName = 'assets/george_washington.flr';
+    final width = 1776;
+    final height = 1804;
+    final controller = WashingtonController(); //instantiate controller
+    
+    FlareActorComponent flareAnimation = FlareActorComponent(
+      fileName,
+      controller: controller,
+      width: 306,
+      height: 228,
+    );
+ 
     flareAnimation.x = 50;
     flareAnimation.y = 240;
     add(flareAnimation);
+
+    // to play an animation
+    controller.play('rise_up');
+
+    // you can add another animation to play at the same time
+    controller.play('close_door_way_out');
+    
+    // also, get a flare node and modify it
+    controller.rightHandNode.rotation = math.pi;
 ```
+
+You can also change the current playing animation using the `updateAnimation` method.
+
+For a working example, check this [source file](/doc/examples/flare/lib/main_component.dart).
 
 ## Composed component
 
@@ -131,9 +175,9 @@ Create it like this:
 
 ```dart
   final images = [
-    ParallaxImage("mountains.jpg"),
-    ParallaxImage("forest.jpg"),
-    ParallaxImage("city.jpg"),
+    ParallaxImage('mountains.jpg'),
+    ParallaxImage('forest.jpg'),
+    ParallaxImage('city.jpg'),
   ];
   this.bg = ParallaxComponent(images);
 ```
@@ -155,9 +199,9 @@ By default the images are aligned to the bottom left, repeated along the X-axis 
 Advanced example:
 ```dart
   final images = [
-    ParallaxImage("stars.jpg", repeat: ImageRepeat.repeat, alignment: Alignment.center, fill: LayerFill.width),
-    ParallaxImage("planets.jpg", repeat: ImageRepeat.repeatY, alignment: Alignment.bottomLeft, fill: LayerFill.none),
-    ParallaxImage("dust.jpg", repeat: ImageRepeat.repeatX, alignment: Alignment.topRight, fill: LayerFill.height),
+    ParallaxImage('stars.jpg', repeat: ImageRepeat.repeat, alignment: Alignment.center, fill: LayerFill.width),
+    ParallaxImage('planets.jpg', repeat: ImageRepeat.repeatY, alignment: Alignment.bottomLeft, fill: LayerFill.none),
+    ParallaxImage('dust.jpg', repeat: ImageRepeat.repeatX, alignment: Alignment.topRight, fill: LayerFill.height),
   ];
   this.bg = ParallaxComponent(images, baseSpeed: Offset(50, 0), layerDelta: Offset(20, 0));
 ```
@@ -183,20 +227,48 @@ So you can have HUD and other non-physics-related components in your game list, 
 
 You can see a more complete example of box2d usage on [this WIP game](https://github.com/feroult/haunt) made by @feroult (beware, though, it uses 0.6.x version of flame, but the Box2D related apis are unchanged).
 
+More information about Box2D can be found [here](/doc/box2d.md).
+
 ## Tiled Component
 
 Currently we have a very basic implementation of a Tiled component. This API uses the lib [Tiled](https://github.com/feroult/tiled.dart) to parse map files and render visible layers.
 
-A example of how to use the API can be found [here](/doc/examples/tiled).
+An example of how to use the API can be found [here](/doc/examples/tiled).
+
+# Isometric Tile Map Component
+
+This component allows you to render an isometric map based on a cartesian matrix of blocks and an isometric tileset.
+
+A simple example on how to use it:
+
+```dart
+  // creates a tileset, the block ids are automatically assigned sequentially starting at 0, from left to right and then top to bottom.
+  final tileset = await IsometricTileset.load('tileset.png', 32);
+  // each element is a block id, -1 means nothing
+  final matrix = [[0, 1, 0], [1, 0, 0], [1, 1, 1]];
+  add(IsometricTileMapComponent(tileset, matrix));
+```
+
+It also provides methods for converting coordinates so you can handle clicks, hovers, render entities on top of tiles, add a selector, etc.
+
+A more in-depth example can be found [here](/doc/examples/isometric).
+
+![An example of a isometric map with selector](images/isometric.png)
 
 # Nine Tile Box Component
 
 A Nine Tile Box is a rectangle drawn using a grid sprite.
 
-The grid sprite is a 3x3 grid and with 9 blocks, representing the 4 courners, the 4 sides and the middle.
+The grid sprite is a 3x3 grid and with 9 blocks, representing the 4 corners, the 4 sides and the middle.
 
-The corners are drawn at the same size, the sides are streched on the side direction and the middle is expanded both ways.
+The corners are drawn at the same size, the sides are stretched on the side direction and the middle is expanded both ways.
 
 Using this, you can get a box/rectangle that expands well to any sizes. This is useful for making panels, dialogs, borders.
 
 Check the example app `nine_tile_box` details on how to use it.
+
+## Effects
+
+Flame provides a set of effects that can be applied to a certain type of components, these effects can be used to animate some properties of your components, like position or dimensions. You can check the list of those effects [here](/doc/effects.md).
+
+Examples of the running effects can be found [here](/doc/examples/effects);

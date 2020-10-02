@@ -4,13 +4,13 @@ import 'package:flame/components/composed_component.dart';
 import 'package:flame/components/mixins/has_game_ref.dart';
 import 'package:flame/components/mixins/resizable.dart';
 import 'package:flame/components/mixins/tapable.dart';
+import 'package:flame/game/base_game.dart';
 import 'package:flutter/gestures.dart';
 import 'package:test/test.dart';
 
-import 'package:flame/game.dart';
 import 'package:flame/components/component.dart';
 
-class MyGame extends BaseGame {}
+class MyGame extends BaseGame with HasTapableComponents {}
 
 class MyTap extends PositionComponent with Tapable, Resizable {
   bool tapped = false;
@@ -19,7 +19,9 @@ class MyTap extends PositionComponent with Tapable, Resizable {
   void render(Canvas c) {}
 
   @override
-  void update(double t) {}
+  void update(double t) {
+    super.update(t);
+  }
 
   @override
   void onTapDown(TapDownDetails details) {
@@ -46,7 +48,9 @@ class PositionComponentNoNeedForRect extends PositionComponent with Tapable {
   void render(Canvas c) {}
 
   @override
-  void update(double t) {}
+  void update(double t) {
+    super.update(t);
+  }
 }
 
 const Size size = Size(1.0, 1.0);
@@ -60,7 +64,7 @@ void main() {
 
       game.size = size;
       game.add(wrapper);
-      game.onTapDown(TapDownDetails(globalPosition: const Offset(0.0, 0.0)));
+      game.onTapDown(1, TapDownDetails(globalPosition: const Offset(0.0, 0.0)));
 
       expect(child.size, size);
       expect(child.tapped, true);
